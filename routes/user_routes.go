@@ -12,6 +12,6 @@ func UserRoutes(r *gin.Engine, db *mongo.Client) {
 	userGroup := r.Group("/users")
 	{
 		userGroup.POST("/create/", controllers.CreateUser(db))
-		// Add more routes here (e.g., GET, PUT, DELETE)
+		userGroup.POST("/login/", controllers.LoginUser(db))
 	}
 }
