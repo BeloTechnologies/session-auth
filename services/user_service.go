@@ -10,9 +10,18 @@ import (
 
 // CreateUser inserts a new user into the database.
 func CreateUser(db *mongo.Client, user *models.User) (interface{}, error) {
-	collection := db.Database("myapp").Collection("users")
+	collection := db.Database("sessionAuth").Collection("users")
 
 	user.CreatedAt = time.Now()
+
+	// Hash the password
+	hashedPassword, err := HashPassword(user.Password)
+	if err != nil {
+		return nil, err
+	}
+	user.Password = hashedPassword
+
+	// Insert the user into the database
 	result, err := collection.InsertOne(context.TODO(), user)
 	if err != nil {
 		return nil, err

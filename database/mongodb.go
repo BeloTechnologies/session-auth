@@ -25,5 +25,7 @@ func ConnectDB() (*mongo.Client, error) {
 	}
 
 	log.Println("Connected to MongoDB!")
+
+	client.Database("sessionAuth").Collection("users")
 	return client, nil
 }
