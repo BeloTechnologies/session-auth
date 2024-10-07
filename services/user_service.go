@@ -9,7 +9,7 @@ import (
 )
 
 // CreateUser inserts a new user into the database.
-func CreateUser(db *mongo.Client, user *models.CreateUser) (interface{}, error) {
+func CreateUser(db *mongo.Client, user *models.CreateUser) (models.AuthResponse, error) {
 	collection := db.Database("sessionAuth").Collection("users")
 
 	user.CreatedAt = time.Now()
@@ -17,17 +17,17 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (interface{}, error) 
 	// Hash the password
 	hashedPassword, err := HashPassword(user.Password)
 	if err != nil {
-		return nil, err
+		return models.AuthResponse{}, err
 	}
 	user.Password = hashedPassword
 
 	// Insert the user into the database
-	result, err := collection.InsertOne(context.TODO(), user)
+	_, err = collection.InsertOne(context.TODO(), user)
 	if err != nil {
-		return nil, err
+		return models.AuthResponse{}, err
 	}
 
-	return result.InsertedID, nil
+	return models.AuthResponse{Token: "token"}, nil
 }
 
 func LoginUser(db *mongo.Client, user *models.LoginUser) (string, error) {
