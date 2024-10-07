@@ -1,7 +1,10 @@
 package main
 
 import (
+	"log"
 	"net/http"
+	"session-auth/config"
+	"session-auth/database"
 
 	"github.com/gin-gonic/gin"
 )
@@ -68,7 +71,14 @@ func setupRouter() *gin.Engine {
 }
 
 func main() {
-	r := setupRouter()
-	// Listen and Server in 0.0.0.0:8080
-	r.Run(":8080")
+	config.LoadEnv()
+
+	_, err := database.ConnectDB()
+	if err != nil {
+		log.Fatal("Failed to connect to MongoDB: ", err)
+	}
+
+	//r := setupRouter()
+	//// Listen and Server in 0.0.0.0:8080
+	//r.Run(":8080")
 }
