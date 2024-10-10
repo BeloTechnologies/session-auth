@@ -60,7 +60,7 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 	return &models.AuthResponse{Token: "token"}, nil
 }
 
-func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, error) {
+func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, *models.SessionError) {
 	collection := db.Database("sessionAuth").Collection("users")
 
 	// Find the user in the database
@@ -71,19 +71,22 @@ func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, 
 	var result models.CreateUser
 	err := collection.FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
-		return nil, err
+		return nil, &models.SessionError{
+			Message:     "User not found",
+			Status:      http.StatusNotFound,
+			Description: "The user with the provided email does not exist.",
+			Errors:      err.Error(),
+		}
 	}
 
 	// Compare the stored password hash with the input password
 	if !ComparePasswords(result.Password, user.Password) {
-		return nil, errors.New("invalid password")
+		return nil, &models.SessionError{
+			Message:     "Invalid credentials",
+			Status:      http.StatusBadRequest,
+			Description: "The email or password provided is incorrect.",
+		}
 	}
-
-	//// Generate a JWT token
-	//token, err := GenerateToken(result.Username)
-	//if err != nil {
-	//	return "", err
-	//}
 
 	return &models.AuthResponse{Token: "token"}, nil
 }

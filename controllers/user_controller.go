@@ -59,10 +59,10 @@ func LoginUser(db *mongo.Client) gin.HandlerFunc {
 		result, err := services.LoginUser(db, &user)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, models.ErrorResponse{
-				Message:     "Internal server error",
-				Errors:      err.Error(),
-				Status:      http.StatusInternalServerError,
-				Description: "An internal server error occurred. Please try again later.",
+				Message:     err.Message,
+				Errors:      err.Errors,
+				Status:      err.Status,
+				Description: err.Description,
 			})
 			return
 		}
