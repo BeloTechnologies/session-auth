@@ -28,12 +28,7 @@ func CreateUser(db *mongo.Client) gin.HandlerFunc {
 		// Call the service to create a user
 		result, err := services.CreateUser(db, &user)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, models.ErrorResponse{
-				Message:     "Internal server error",
-				Errors:      err.Error(),
-				Status:      http.StatusInternalServerError,
-				Description: "An internal server error occurred. Please try again later.",
-			})
+			c.JSON(err.Status, err)
 			return
 		}
 

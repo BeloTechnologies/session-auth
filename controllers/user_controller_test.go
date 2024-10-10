@@ -34,6 +34,9 @@ func TestCreateUser(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
+		// Mock the document that should be returned by FindOne
+		mt.AddMockResponses(mtest.CreateCursorResponse(0, "sessionAuth.users", mtest.FirstBatch))
+		// Mock the document that should be returned by InsertOne
 		mt.AddMockResponses(mtest.CreateSuccessResponse())
 
 		r.ServeHTTP(w, req)
