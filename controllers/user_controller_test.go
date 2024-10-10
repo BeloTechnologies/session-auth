@@ -2,12 +2,16 @@ package controllers
 
 import (
 	"bytes"
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/integration/mtest"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"session-auth/models"
+	"session-auth/services"
 	"testing"
 )
 
@@ -34,7 +38,7 @@ func TestCreateUser(t *testing.T) {
 
 		r.ServeHTTP(w, req)
 
-		assert.Equal(t, http.StatusCreated, w.Code)
+		checkSuccessResponse(t, w, http.StatusCreated)
 	})
 }
 
@@ -56,9 +60,12 @@ func TestLoginUser(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		// Mock the document that should be returned by FindOne
+		hashed, err := services.HashPassword("password")
+		assert.NoError(t, err)
+
 		mockUser := bson.D{
 			{Key: "email", Value: "test.user@example.com"},
-			{Key: "password", Value: "hashedPassword"},
+			{Key: "password", Value: hashed},
 		}
 
 		// Add the mock response for FindOne
@@ -67,6 +74,29 @@ func TestLoginUser(t *testing.T) {
 
 		r.ServeHTTP(w, req)
 
-		assert.Equal(t, http.StatusOK, w.Code)
+		checkSuccessResponse(t, w, http.StatusOK)
 	})
+}
+
+func checkSuccessResponse(t *testing.T, w *httptest.ResponseRecorder, expectedCode int) {
+	log.Println("Checking user controller success responses")
+
+	assert.Equal(t, expectedCode, w.Code)
+
+	// Unmarshal the response body into the SuccessResponse struct
+	var responseBody models.SuccessResponse
+	err := json.Unmarshal(w.Body.Bytes(), &responseBody)
+	assert.NoError(t, err)
+
+	assert.Equal(t, expectedCode, responseBody.Status)
+
+	// Unmarshal the Data field into AuthResponse
+	dataBytes, err := json.Marshal(responseBody.Data)
+	assert.NoError(t, err)
+
+	var authResponse models.AuthResponse
+	err = json.Unmarshal(dataBytes, &authResponse)
+	assert.NoError(t, err)
+
+	assert.NotEmpty(t, authResponse.Token)
 }

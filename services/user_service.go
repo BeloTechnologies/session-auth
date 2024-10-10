@@ -27,10 +27,12 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (models.AuthResponse,
 		return models.AuthResponse{}, err
 	}
 
+	// Generate a token for the user on successful creation
+
 	return models.AuthResponse{Token: "token"}, nil
 }
 
-func LoginUser(db *mongo.Client, user *models.LoginUser) (string, error) {
+func LoginUser(db *mongo.Client, user *models.LoginUser) (models.AuthResponse, error) {
 	collection := db.Database("sessionAuth").Collection("users")
 
 	// Find the user in the database
@@ -41,12 +43,12 @@ func LoginUser(db *mongo.Client, user *models.LoginUser) (string, error) {
 	var result models.CreateUser
 	err := collection.FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
-		return "No user associated with this email: ", err
+		return models.AuthResponse{}, err
 	}
 
 	// Compare the stored password hash with the input password
 	if !ComparePasswords(result.Password, user.Password) {
-		return "Passwords do not match", nil
+		return models.AuthResponse{}, nil
 	}
 
 	//// Generate a JWT token
@@ -55,5 +57,5 @@ func LoginUser(db *mongo.Client, user *models.LoginUser) (string, error) {
 	//	return "", err
 	//}
 
-	return "token", nil
+	return models.AuthResponse{Token: "token"}, nil
 }

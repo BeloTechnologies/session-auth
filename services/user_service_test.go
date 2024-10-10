@@ -21,10 +21,11 @@ func TestCreateUser(t *testing.T) {
 
 		mt.AddMockResponses(mtest.CreateSuccessResponse())
 
-		userID, err := CreateUser(mt.Client, &user)
+		tokenResponse, err := CreateUser(mt.Client, &user)
 
 		assert.NoError(t, err)
-		assert.NotNil(t, userID)
+		assert.NotNil(t, tokenResponse)
+		assert.NotNil(t, tokenResponse.Token)
 	})
 }
 
@@ -47,9 +48,10 @@ func TestLoginUser(t *testing.T) {
 		firstBatch := mtest.CreateCursorResponse(1, "sessionAuth.users", mtest.FirstBatch, mockUser)
 		mt.AddMockResponses(firstBatch)
 
-		token, err := LoginUser(mt.Client, &user)
+		tokenResponse, err := LoginUser(mt.Client, &user)
 
 		assert.NoError(t, err)
-		assert.NotNil(t, token)
+		assert.NotNil(t, tokenResponse)
+		assert.NotNil(t, tokenResponse.Token)
 	})
 }
