@@ -71,12 +71,12 @@ func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, 
 	var result models.CreateUser
 	err := collection.FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
-		return &models.AuthResponse{}, err
+		return nil, err
 	}
 
 	// Compare the stored password hash with the input password
 	if !ComparePasswords(result.Password, user.Password) {
-		return &models.AuthResponse{}, nil
+		return nil, errors.New("invalid password")
 	}
 
 	//// Generate a JWT token

@@ -65,9 +65,12 @@ func TestLoginUser(t *testing.T) {
 		}
 
 		// Mock the document that should be returned by FindOne
+		hashed, err := HashPassword("password")
+		assert.NoError(t, err)
+
 		mockUser := bson.D{
 			{Key: "email", Value: "test.user@example.com"},
-			{Key: "password", Value: "hashedPassword"},
+			{Key: "password", Value: hashed},
 		}
 
 		// Add the mock response for FindOne
