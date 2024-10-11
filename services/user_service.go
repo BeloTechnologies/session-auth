@@ -66,7 +66,17 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 	}
 
 	// Generate a token for the user on successful creation
-	return &models.AuthResponse{Token: "token"}, nil
+	token, err := GenerateJwt(user.Email)
+	if err != nil {
+		return nil, &models.SessionError{
+			Message:     "Internal server error",
+			Description: "An internal server error occurred. Please try again later.",
+			Status:      http.StatusInternalServerError,
+			Errors:      "",
+		}
+	}
+
+	return &models.AuthResponse{Token: token}, nil
 }
 
 func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, *models.SessionError) {
@@ -97,5 +107,16 @@ func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, 
 		}
 	}
 
-	return &models.AuthResponse{Token: "token"}, nil
+	// Generate a token for the user on successful creation
+	token, err := GenerateJwt(user.Email)
+	if err != nil {
+		return nil, &models.SessionError{
+			Message:     "Internal server error",
+			Description: "An internal server error occurred. Please try again later.",
+			Status:      http.StatusInternalServerError,
+			Errors:      "",
+		}
+	}
+
+	return &models.AuthResponse{Token: token}, nil
 }
