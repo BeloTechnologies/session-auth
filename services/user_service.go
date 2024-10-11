@@ -11,7 +11,7 @@ import (
 )
 
 // CreateUser inserts a new user into the database.
-func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse, *models.ErrorResponse) {
+func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse, *models.SessionError) {
 	collection := db.Database("sessionAuth").Collection("users")
 
 	// Check if the user already exists
@@ -22,11 +22,11 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 	var existingUser models.CreateUser
 	existing := collection.FindOne(context.TODO(), filter).Decode(&existingUser)
 	if !errors.Is(existing, mongo.ErrNoDocuments) {
-		return nil, &models.ErrorResponse{
+		return nil, &models.SessionError{
 			Message:     "User already exists",
-			Description: "A user with the provided email already exists. Please try logging in.",
 			Status:      http.StatusConflict,
-			Errors:      "User already exists",
+			Description: "A user with the provided email already exists. Please try logging in.",
+			Errors:      existing.Error(),
 		}
 	}
 
@@ -35,11 +35,11 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 	// Hash the password
 	hashedPassword, err := HashPassword(user.Password)
 	if err != nil {
-		return nil, &models.ErrorResponse{
+		return nil, &models.SessionError{
 			Message:     "Internal server error",
 			Description: "An internal server error occurred. Please try again later.",
 			Status:      http.StatusInternalServerError,
-			Errors:      err.Error(),
+			Errors:      "",
 		}
 	}
 	user.Password = hashedPassword
@@ -47,7 +47,7 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 	// Insert the user into the database
 	_, err = collection.InsertOne(context.TODO(), user)
 	if err != nil {
-		return nil, &models.ErrorResponse{
+		return nil, &models.SessionError{
 			Message:     "Internal server error",
 			Description: "An internal server error occurred. Please try again later.",
 			Status:      http.StatusInternalServerError,

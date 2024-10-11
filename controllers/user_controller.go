@@ -28,7 +28,12 @@ func CreateUser(db *mongo.Client) gin.HandlerFunc {
 		// Call the service to create a user
 		result, err := services.CreateUser(db, &user)
 		if err != nil {
-			c.JSON(err.Status, err)
+			c.JSON(err.Status, models.ErrorResponse{
+				Message:     err.Message,
+				Errors:      err.Errors,
+				Status:      err.Status,
+				Description: err.Description,
+			})
 			return
 		}
 
