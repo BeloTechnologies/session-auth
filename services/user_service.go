@@ -19,22 +19,32 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 		"email": user.Email,
 	}
 
+	// FineOne will return a nil error if a document is found
 	var existingUser models.CreateUser
-	existing := collection.FindOne(context.TODO(), filter).Decode(&existingUser)
-	if !errors.Is(existing, mongo.ErrNoDocuments) {
-		return nil, &models.SessionError{
-			Message:     "User already exists",
-			Status:      http.StatusConflict,
-			Description: "A user with the provided email already exists. Please try logging in.",
-			Errors:      existing.Error(),
+	err := collection.FindOne(context.TODO(), filter).Decode(&existingUser)
+	if err == nil {
+		if !errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, &models.SessionError{
+				Message:     "User already exists",
+				Status:      http.StatusConflict,
+				Description: "A user with the provided email already exists. Please try logging in.",
+				Errors:      "",
+			}
+		} else {
+			return nil, &models.SessionError{
+				Message:     "Internal server error",
+				Description: "An internal server error occurred. Please try again later.",
+				Status:      http.StatusInternalServerError,
+				Errors:      "",
+			}
 		}
 	}
 
 	user.CreatedAt = time.Now()
 
 	// Hash the password
-	hashedPassword, err := HashPassword(user.Password)
-	if err != nil {
+	hashedPassword, existing := HashPassword(user.Password)
+	if existing != nil {
 		return nil, &models.SessionError{
 			Message:     "Internal server error",
 			Description: "An internal server error occurred. Please try again later.",
@@ -45,18 +55,17 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 	user.Password = hashedPassword
 
 	// Insert the user into the database
-	_, err = collection.InsertOne(context.TODO(), user)
-	if err != nil {
+	_, existing = collection.InsertOne(context.TODO(), user)
+	if existing != nil {
 		return nil, &models.SessionError{
 			Message:     "Internal server error",
 			Description: "An internal server error occurred. Please try again later.",
 			Status:      http.StatusInternalServerError,
-			Errors:      err.Error(),
+			Errors:      existing.Error(),
 		}
 	}
 
 	// Generate a token for the user on successful creation
-
 	return &models.AuthResponse{Token: "token"}, nil
 }
 
