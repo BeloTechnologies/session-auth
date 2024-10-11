@@ -44,8 +44,13 @@ func TestCreateUserUserExists(t *testing.T) {
 			Phone:    "1234567890",
 		}
 
+		mockUser := bson.D{
+			{Key: "email", Value: "test.user@example.com"},
+		}
+
 		// Mock the document that should be returned by FindOne
-		mt.AddMockResponses(mtest.CreateCursorResponse(1, "sessionAuth.users", mtest.FirstBatch))
+		firstBatch := mtest.CreateCursorResponse(1, "sessionAuth.users", mtest.FirstBatch, mockUser)
+		mt.AddMockResponses(firstBatch)
 
 		tokenResponse, err := CreateUser(mt.Client, &user)
 
