@@ -87,7 +87,7 @@ func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, 
 		"email": user.Email,
 	}
 
-	var result models.CreateUser
+	var result models.LoginUser
 	err := collection.FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
 		return nil, &models.SessionError{
