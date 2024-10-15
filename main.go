@@ -1,17 +1,23 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-contrib/cors"
+	"github.com/spf13/viper"
 	"log"
-	"session-auth/config"
+	"session-auth/configs"
 	"session-auth/database"
 	"session-auth/routes"
+	"session-auth/utils"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	config.LoadEnv()
+	configs.LoadEnv()
+	utils.InitConfig()
+
+	serverPort := viper.GetInt("server.port")
 
 	db, err := database.ConnectDB()
 	if err != nil {
@@ -31,8 +37,8 @@ func main() {
 
 	log.Println("Starting server on :8080")
 
-	err = r.Run(":8080")
-	if err != nil {
+	e := r.Run(fmt.Sprintf(":%d", serverPort))
+	if e != nil {
 		return
 	}
 }

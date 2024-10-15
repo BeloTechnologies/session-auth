@@ -9,7 +9,7 @@ import (
 
 // UserRoutes sets up the user-related routes.
 func UserRoutes(r *gin.Engine, db *mongo.Client) {
-	userGroup := r.Group("/users")
+	userGroup := r.Group("/auth")
 	{
 		userGroup.POST("/create/", controllers.CreateUser(db))
 		userGroup.POST("/login/", controllers.LoginUser(db))
