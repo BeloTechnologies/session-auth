@@ -1,6 +1,8 @@
 package services
 
 import (
+	"github.com/jarcoal/httpmock"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/integration/mtest"
@@ -10,6 +12,12 @@ import (
 )
 
 func TestCreateUser(t *testing.T) {
+	httpmock.Activate()
+	t.Cleanup(httpmock.DeactivateAndReset)
+
+	httpmock.RegisterResponder("POST", viper.GetString("proxies.user.url")+"/users/create/",
+		httpmock.NewStringResponder(200, `{"status": 201, "message": "User created successfully", "data": {"token": "testtoken}`))
+
 	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 
 	mt.Run("create user", func(mt *mtest.T) {
