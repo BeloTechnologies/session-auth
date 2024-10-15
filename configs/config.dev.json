@@ -2,7 +2,12 @@
   "database": {
     "mongodburi": "mongodb://localhost:27017"
   },
-    "server": {
+  "server": {
         "port": 8080
+  },
+  "proxies": {
+    "user": {
+      "url": "http://localhost:8081"
     }
+  }
 }

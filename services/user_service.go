@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"session-auth/models"
+	"session-auth/proxy"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -53,6 +54,17 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 		}
 	}
 	user.Password = hashedPassword
+
+	// Call the session-user service to create an entry in relational database
+	_, proxyErr := proxy.CreateUserEntryInUserProxy()
+	if proxyErr != nil {
+		return nil, &models.SessionError{
+			Message:     "Internal server error",
+			Description: "An internal server error occurred. Please try again later.",
+			Status:      http.StatusInternalServerError,
+			Errors:      "",
+		}
+	}
 
 	// Insert the user into the database
 	_, existing = collection.InsertOne(context.TODO(), user)
