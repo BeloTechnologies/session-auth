@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"github.com/BeloTechnologies/session-core/core_models"
 	"net/http"
 	"session-auth/models"
 	"session-auth/proxy"
@@ -12,7 +13,7 @@ import (
 )
 
 // CreateUser inserts a new user into the database.
-func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse, *models.SessionError) {
+func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse, *core_models.SessionError) {
 	collection := db.Database("sessionAuth").Collection("users")
 
 	// Check if the user already exists
@@ -25,14 +26,14 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 	err := collection.FindOne(context.TODO(), filter).Decode(&existingUser)
 	if err == nil {
 		if !errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, &models.SessionError{
+			return nil, &core_models.SessionError{
 				Message:     "User already exists",
 				Status:      http.StatusConflict,
 				Description: "A user with the provided email already exists. Please try logging in.",
 				Errors:      "",
 			}
 		} else {
-			return nil, &models.SessionError{
+			return nil, &core_models.SessionError{
 				Message:     "Internal server error",
 				Description: "An internal server error occurred. Please try again later.",
 				Status:      http.StatusInternalServerError,
@@ -46,7 +47,7 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 	// Hash the password
 	hashedPassword, existing := HashPassword(user.Password)
 	if existing != nil {
-		return nil, &models.SessionError{
+		return nil, &core_models.SessionError{
 			Message:     "Internal server error",
 			Description: "An internal server error occurred. Please try again later.",
 			Status:      http.StatusInternalServerError,
@@ -58,7 +59,7 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 	// Call the session-user service to create an entry in relational database
 	_, proxyErr := proxy.CreateUserEntryInUserProxy()
 	if proxyErr != nil {
-		return nil, &models.SessionError{
+		return nil, &core_models.SessionError{
 			Message:     "Internal server error",
 			Description: "An internal server error occurred. Please try again later.",
 			Status:      http.StatusInternalServerError,
@@ -69,7 +70,7 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 	// Insert the user into the database
 	_, existing = collection.InsertOne(context.TODO(), user)
 	if existing != nil {
-		return nil, &models.SessionError{
+		return nil, &core_models.SessionError{
 			Message:     "Internal server error",
 			Description: "An internal server error occurred. Please try again later.",
 			Status:      http.StatusInternalServerError,
@@ -80,7 +81,7 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 	// Generate a token for the user on successful creation
 	token, err := GenerateJwt(user.Email)
 	if err != nil {
-		return nil, &models.SessionError{
+		return nil, &core_models.SessionError{
 			Message:     "Internal server error",
 			Description: "An internal server error occurred. Please try again later.",
 			Status:      http.StatusInternalServerError,
@@ -91,7 +92,7 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 	return &models.AuthResponse{Token: token}, nil
 }
 
-func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, *models.SessionError) {
+func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, *core_models.SessionError) {
 	collection := db.Database("sessionAuth").Collection("users")
 
 	// Find the user in the database
@@ -102,7 +103,7 @@ func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, 
 	var result models.LoginUser
 	err := collection.FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
-		return nil, &models.SessionError{
+		return nil, &core_models.SessionError{
 			Message:     "User not found",
 			Status:      http.StatusNotFound,
 			Description: "The user with the provided email does not exist.",
@@ -112,7 +113,7 @@ func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, 
 
 	// Compare the stored password hash with the input password
 	if !ComparePasswords(result.Password, user.Password) {
-		return nil, &models.SessionError{
+		return nil, &core_models.SessionError{
 			Message:     "Invalid credentials",
 			Status:      http.StatusBadRequest,
 			Description: "The email or password provided is incorrect.",
@@ -122,7 +123,7 @@ func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, 
 	// Generate a token for the user on successful creation
 	token, err := GenerateJwt(user.Email)
 	if err != nil {
-		return nil, &models.SessionError{
+		return nil, &core_models.SessionError{
 			Message:     "Internal server error",
 			Description: "An internal server error occurred. Please try again later.",
 			Status:      http.StatusInternalServerError,
