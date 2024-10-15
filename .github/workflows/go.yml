@@ -21,6 +21,15 @@ jobs:
       with:
         go-version: '1.23'
 
+    - name: Configure GitHub Token
+      env:
+        GOPRIVATE: github.com/BeloTechnologies/*
+        GONOSUMDB: github.com/BeloTechnologies/*
+        GITHUB_TOKEN: ${{ secrets.BELO_CI }}
+      run: |
+        echo "machine github.com login ${GITHUB_ACTOR} password ${GITHUB_TOKEN}" > ~/.netrc
+        chmod 600 ~/.netrc
+
     - name: Build
       run: go build -v ./...
 
