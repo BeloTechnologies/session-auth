@@ -3,6 +3,7 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/BeloTechnologies/session-core/core_models"
 	"github.com/gin-gonic/gin"
 	"github.com/jarcoal/httpmock"
 	"github.com/spf13/viper"
@@ -94,7 +95,7 @@ func checkSuccessResponse(t *testing.T, w *httptest.ResponseRecorder, expectedCo
 	assert.Equal(t, expectedCode, w.Code)
 
 	// Unmarshal the response body into the SuccessResponse struct
-	var responseBody models.SuccessResponse
+	var responseBody core_models.SuccessResponse
 	err := json.Unmarshal(w.Body.Bytes(), &responseBody)
 	assert.NoError(t, err)
 

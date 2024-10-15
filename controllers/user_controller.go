@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/BeloTechnologies/session-core/core_models"
 	"net/http"
 	"session-auth/models"
 	"session-auth/services"
@@ -16,7 +17,7 @@ func CreateUser(db *mongo.Client) gin.HandlerFunc {
 
 		// Validate input
 		if err := c.ShouldBindJSON(&user); err != nil {
-			c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			c.JSON(http.StatusBadRequest, core_models.ErrorResponse{
 				Message:     "Invalid input",
 				Errors:      err.Error(),
 				Status:      http.StatusBadRequest,
@@ -28,7 +29,7 @@ func CreateUser(db *mongo.Client) gin.HandlerFunc {
 		// Call the service to create a user
 		result, err := services.CreateUser(db, &user)
 		if err != nil {
-			c.JSON(err.Status, models.ErrorResponse{
+			c.JSON(err.Status, core_models.ErrorResponse{
 				Message:     err.Message,
 				Errors:      err.Errors,
 				Status:      err.Status,
@@ -37,7 +38,7 @@ func CreateUser(db *mongo.Client) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusCreated, models.SuccessResponse{
+		c.JSON(http.StatusCreated, core_models.SuccessResponse{
 			Message: "User created successfully",
 			Status:  http.StatusCreated,
 			Data:    result,
@@ -51,7 +52,7 @@ func LoginUser(db *mongo.Client) gin.HandlerFunc {
 
 		// Validate input
 		if err := c.ShouldBindJSON(&user); err != nil {
-			c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			c.JSON(http.StatusBadRequest, core_models.ErrorResponse{
 				Message:     "Invalid input",
 				Errors:      err.Error(),
 				Status:      http.StatusBadRequest,
@@ -63,7 +64,7 @@ func LoginUser(db *mongo.Client) gin.HandlerFunc {
 		// Call the service to create a user
 		result, err := services.LoginUser(db, &user)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			c.JSON(http.StatusInternalServerError, core_models.ErrorResponse{
 				Message:     err.Message,
 				Errors:      err.Errors,
 				Status:      err.Status,
@@ -72,7 +73,7 @@ func LoginUser(db *mongo.Client) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, models.SuccessResponse{
+		c.JSON(http.StatusOK, core_models.SuccessResponse{
 			Message: "User logged in successfully",
 			Status:  http.StatusOK,
 			Data:    result,
