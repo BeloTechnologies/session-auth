@@ -50,13 +50,19 @@ func TestCreateUser(t *testing.T) {
 
 		r.POST("/users/create/", CreateUser(mt.Client))
 
-		payload := `{
-			"username": "john.doe",
-			"password": "password",	
-			"email": "johndoe@example.com",
-			"phone": "123-456-7890"
-		}`
-		req, _ := http.NewRequest("POST", "/users/create/", bytes.NewBufferString(payload))
+		inputtedUser := models.CreateUser{
+			Username:  "john.doe",
+			FirstName: "John",
+			LastName:  "Doe",
+			Password:  "password",
+			Email:     "johndoe@example.com",
+			Phone:     "123-456-7890",
+		}
+
+		userJson, err := json.Marshal(inputtedUser)
+		assert.NoError(t, err)
+
+		req, _ := http.NewRequest("POST", "/users/create/", bytes.NewBuffer(userJson))
 		req.Header.Set("Content-Type", "application/json")
 
 		w := httptest.NewRecorder()

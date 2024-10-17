@@ -64,8 +64,8 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 	// Call the session-user service to create an entry in relational database
 	createUserRowResult, proxyErr := CreateUserEntryInUserProxy(user_models.CreateUserRow{
 		Username:  user.Username,
-		FirstName: "test-first",
-		LastName:  "test-last",
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
 		Email:     user.Email,
 		Phone:     user.Phone,
 	})

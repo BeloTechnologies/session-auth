@@ -6,6 +6,8 @@ import "time"
 type CreateUser struct {
 	ID        string    `bson:"_id,omitempty" json:"id"`
 	Username  string    `bson:"username" json:"username" binding:"required"`
+	FirstName string    `bson:"first_name" json:"first_name" binding:"required"`
+	LastName  string    `bson:"last_name" json:"last_name" binding:"required"`
 	Password  string    `bson:"password" json:"password" binding:"required"`
 	Email     string    `bson:"email" json:"email" binding:"required"`
 	Phone     string    `bson:"phone" json:"phone" binding:"required"`
