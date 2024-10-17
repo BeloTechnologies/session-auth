@@ -21,13 +21,13 @@ func ComparePasswords(hashedPassword, password string) bool {
 	return err == nil
 }
 
-func GenerateJwt(email string) (string, error) {
+func GenerateJwt(ID string) (string, error) {
 	secret := os.Getenv("SECRET_KEY")
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
-			"email": email,
-			"exp":   time.Now().Add(time.Hour * 24).Unix(),
+			"ID":  ID,
+			"exp": time.Now().Add(time.Hour * 24).Unix(),
 		})
 
 	tokenString, err := token.SignedString([]byte(secret))

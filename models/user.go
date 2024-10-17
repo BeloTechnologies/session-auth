@@ -10,6 +10,7 @@ type CreateUser struct {
 	Email     string    `bson:"email" json:"email" binding:"required"`
 	Phone     string    `bson:"phone" json:"phone" binding:"required"`
 	CreatedAt time.Time `bson:"created_at" json:"created_at"`
+	PsqlID    int       `bson:"psql_id" json:"psql_id"`
 }
 
 // LoginUser represents a user document stored in the database

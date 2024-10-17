@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/spf13/viper"
-	"log"
 	"session-auth/configs"
 	"session-auth/database"
 	"session-auth/routes"
@@ -14,6 +13,11 @@ import (
 )
 
 func main() {
+	// Init logger
+	log := utils.InitLogger()
+	log.Info("Initializing server...")
+
+	log.Info("Loading environment variables and configs...")
 	configs.LoadEnv()
 	utils.InitConfig()
 
@@ -36,7 +40,7 @@ func main() {
 	routes.UserRoutes(r, db)
 	routes.AuthRoutes(r)
 
-	log.Println(fmt.Sprintf("Starting server on :%d", serverPort))
+	log.Info(fmt.Sprintf("Starting server on :%d", serverPort))
 
 	e := r.Run(fmt.Sprintf(":%d", serverPort))
 	if e != nil {

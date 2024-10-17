@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
-	"log"
 )
 
 // InitConfig function to initialize viper configuration
 func InitConfig() {
+	log := InitLogger()
 	profile := "dev" // Dynamically change this based on your environment
 	viper.SetConfigName(fmt.Sprintf("config.%s", profile))
 	viper.AddConfigPath("./configs")
@@ -25,6 +25,6 @@ func InitConfig() {
 func LoadEnv() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("No .env file found")
+		log.Error("No .env file found")
 	}
 }
