@@ -1,6 +1,9 @@
 package services
 
 import (
+	"encoding/json"
+	"github.com/BeloTechnologies/session-core/core_models"
+	"github.com/BeloTechnologies/session-core/core_models/user_models"
 	"github.com/jarcoal/httpmock"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -15,8 +18,26 @@ func TestCreateUser(t *testing.T) {
 	httpmock.Activate()
 	t.Cleanup(httpmock.DeactivateAndReset)
 
-	httpmock.RegisterResponder("POST", viper.GetString("proxies.user.url")+"/users/create/",
-		httpmock.NewStringResponder(200, `{"status": 201, "message": "User created successfully", "data": {"token": "testtoken}`))
+	user := user_models.CreateUserRowResponse{
+		ID:        1,
+		Username:  "johndoe",
+		FirstName: "John",
+		LastName:  "Doe",
+		Email:     "johndoe@example.com",
+		Phone:     "123-456-7890",
+	}
+
+	successResponse := core_models.SuccessResponse{
+		Message: "User created successfully",
+		Status:  http.StatusCreated,
+		Data:    user,
+	}
+
+	successJson, err := json.Marshal(successResponse)
+	assert.NoError(t, err)
+
+	httpmock.RegisterResponder("POST", viper.GetString("proxies.user.url")+"/users/create_row/",
+		httpmock.NewStringResponder(http.StatusCreated, string(successJson)))
 
 	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 
