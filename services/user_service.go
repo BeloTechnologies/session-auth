@@ -23,6 +23,7 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 	filter := map[string]interface{}{
 		"email": user.Email,
 	}
+	// TODO: Check if the user exists via username and phone too!
 
 	// FineOne will return a nil error if a document is found
 	var existingUser models.CreateUser
@@ -79,7 +80,7 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 		}
 	}
 
-	log.Infof("IDs mapped: %v", createUserRowResult)
+	// Set the psqlID in the user struct
 	user.PsqlID = createUserRowResult.ID
 
 	// Insert the user into the database
@@ -103,6 +104,8 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 			Errors:      "",
 		}
 	}
+
+	createUserRowResult.ID = -1
 
 	return &models.AuthResponse{
 		Token:    token,
@@ -164,6 +167,8 @@ func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, 
 			Errors:      "",
 		}
 	}
+
+	userRow.ID = -1
 
 	return &models.AuthResponse{
 		Token:    token,
