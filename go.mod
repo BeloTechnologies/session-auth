@@ -3,7 +3,7 @@ module session-auth
 go 1.23.2
 
 require (
-	github.com/BeloTechnologies/session-core v0.1.32
+	github.com/BeloTechnologies/session-core v0.1.33
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
