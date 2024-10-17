@@ -11,7 +11,7 @@ import (
 	"session-auth/utils"
 )
 
-func CreateUserEntryInUserProxy(user user_models.CreateUserRow) (user_models.CreateUserRowResponse, error) {
+func CreateUserEntry(user user_models.CreateUserRow) (user_models.CreateUserRowResponse, error) {
 	log := utils.InitLogger() // Initialize and get the logger
 	var successResponse core_models.SuccessResponse
 	var userResponse user_models.CreateUserRowResponse
@@ -65,4 +65,51 @@ func CreateUserEntryInUserProxy(user user_models.CreateUserRow) (user_models.Cre
 	}
 
 	return userResponse, nil
+}
+
+// GetUser retrieves a user from the user service
+func GetUser(ID int) (user_models.User, error) {
+	log := utils.InitLogger() // Initialize and get the logger
+	var successResponse core_models.SuccessResponse
+	var user user_models.User
+	url := viper.GetString("proxies.user.url")
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/users/%d", url, ID), nil)
+	if err != nil {
+		log.Errorf("error creating new request: %v", err)
+		return user, fmt.Errorf("error creating new request: %w", err)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Errorf("error making GET request: %v", err)
+		return user, fmt.Errorf("error making GET request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Response validation
+	if resp.StatusCode != http.StatusOK {
+		log.Errorf("unexpected status code: %d", resp.StatusCode)
+		return user, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&successResponse); err != nil {
+		log.Errorf("error decoding response body: %v", err)
+		return user, fmt.Errorf("error decoding response body: %w", err)
+	}
+
+	// Unmarshal the Data field into User
+	dataBytes, err := json.Marshal(successResponse.Data)
+	if err != nil {
+		log.Error("error marshalling proxy responses")
+		return user, fmt.Errorf("error marshalling proxy responses")
+	}
+
+	if err := json.Unmarshal(dataBytes, &user); err != nil {
+		log.Errorf("error decoding response body: %v", err)
+		return user, fmt.Errorf("error decoding response body: %w", err)
+	}
+
+	return user, nil
 }

@@ -62,7 +62,7 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 	user.Password = hashedPassword
 
 	// Call the session-user service to create an entry in relational database
-	createUserRowResult, proxyErr := CreateUserEntryInUserProxy(user_models.CreateUserRow{
+	createUserRowResult, proxyErr := CreateUserEntry(user_models.CreateUserRow{
 		Username:  user.Username,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
@@ -115,6 +115,7 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 }
 
 func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, *core_models.SessionError) {
+	log := utils.InitLogger()
 	collection := db.Database("sessionAuth").Collection("users")
 
 	// Find the user in the database
@@ -122,9 +123,10 @@ func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, 
 		"email": user.Email,
 	}
 
-	var result models.LoginUser
+	var result models.User
 	err := collection.FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
+		log.Errorf("Error finding user: %v", err)
 		return nil, &core_models.SessionError{
 			Message:     "User not found",
 			Status:      http.StatusNotFound,
@@ -132,6 +134,8 @@ func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, 
 			Errors:      err.Error(),
 		}
 	}
+
+	log.Infof("User found: %v", result)
 
 	// Compare the stored password hash with the input password
 	if !ComparePasswords(result.Password, user.Password) {
@@ -153,5 +157,27 @@ func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, 
 		}
 	}
 
-	return &models.AuthResponse{Token: token}, nil
+	// Get User details from the relational database for fast access
+	userRow, proxyErr := GetUser(result.PsqlID)
+	if proxyErr != nil {
+		log.Errorf("Error getting user row: %v", proxyErr)
+		return nil, &core_models.SessionError{
+			Message:     "Internal server error",
+			Description: "An internal server error occurred. Please try again later.",
+			Status:      http.StatusInternalServerError,
+			Errors:      "",
+		}
+	}
+
+	return &models.AuthResponse{
+		Token:          token,
+		Username:       userRow.Username,
+		FirstName:      userRow.FirstName,
+		LastName:       userRow.LastName,
+		Email:          userRow.Email,
+		Phone:          userRow.Phone,
+		CreatedAt:      userRow.CreatedAt,
+		FollowersCount: userRow.FollowersCount,
+		FollowingCount: userRow.FollowingCount,
+	}, nil
 }
