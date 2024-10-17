@@ -20,7 +20,7 @@ func TestCreateUser(t *testing.T) {
 
 	user := user_models.CreateUserRowResponse{
 		ID:        1,
-		Username:  "johndoe",
+		Username:  "john.doe",
 		FirstName: "John",
 		LastName:  "Doe",
 		Email:     "johndoe@example.com",
@@ -42,11 +42,11 @@ func TestCreateUser(t *testing.T) {
 	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 
 	mt.Run("create user", func(mt *mtest.T) {
-		user := models.CreateUser{
-			Username: "testuser",
+		inputtedUser := models.CreateUser{
+			Username: "john.doe",
 			Password: "password",
-			Email:    "test.user@example.com",
-			Phone:    "1234567890",
+			Email:    "johndoe@example.com",
+			Phone:    "123-456-7890",
 		}
 
 		// Mock the document that should be returned by FindOne
@@ -54,11 +54,12 @@ func TestCreateUser(t *testing.T) {
 		// Mock the document that should be returned by InsertOne
 		mt.AddMockResponses(mtest.CreateSuccessResponse())
 
-		tokenResponse, err := CreateUser(mt.Client, &user)
+		authResponse, err := CreateUser(mt.Client, &inputtedUser)
 
 		assert.Nil(t, err)
-		assert.NotNil(t, tokenResponse)
-		assert.NotNil(t, tokenResponse.Token)
+		assert.NotNil(t, authResponse)
+		assert.NotNil(t, authResponse.Token)
+		assert.Equal(t, authResponse.Email, inputtedUser.Email)
 	})
 }
 

@@ -104,7 +104,14 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 		}
 	}
 
-	return &models.AuthResponse{Token: token}, nil
+	return &models.AuthResponse{
+		Token:     token,
+		Username:  createUserRowResult.Username,
+		FirstName: createUserRowResult.FirstName,
+		LastName:  createUserRowResult.LastName,
+		Email:     createUserRowResult.Email,
+		Phone:     createUserRowResult.Phone,
+	}, nil
 }
 
 func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, *core_models.SessionError) {
