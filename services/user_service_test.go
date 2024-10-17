@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/BeloTechnologies/session-core/core_models"
 	"github.com/BeloTechnologies/session-core/core_models/user_models"
 	"github.com/jarcoal/httpmock"
@@ -91,11 +92,38 @@ func TestCreateUserUserExists(t *testing.T) {
 }
 
 func TestLoginUser(t *testing.T) {
+	testID := 1
+	httpmock.Activate()
+	t.Cleanup(httpmock.DeactivateAndReset)
+
+	user := user_models.User{
+		Username:       "john.doe",
+		FirstName:      "John",
+		LastName:       "Doe",
+		Email:          "johndoe@example.com",
+		Phone:          "123-456-7890",
+		CreatedAt:      "2021-01-01T00:00:00Z",
+		FollowersCount: 0,
+		FollowingCount: 0,
+	}
+
+	successResponse := core_models.SuccessResponse{
+		Message: "User created successfully",
+		Status:  http.StatusOK,
+		Data:    user,
+	}
+
+	successJson, err := json.Marshal(successResponse)
+	assert.NoError(t, err)
+
+	httpmock.RegisterResponder("GET", viper.GetString("proxies.user.url")+fmt.Sprintf("/users/%d", testID),
+		httpmock.NewStringResponder(http.StatusOK, string(successJson)))
+
 	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 
 	mt.Run("login user", func(mt *mtest.T) {
 		user := models.LoginUser{
-			Email:    "test.user@example.com",
+			Email:    "johndoe@example.com",
 			Password: "password",
 		}
 
@@ -104,8 +132,13 @@ func TestLoginUser(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockUser := bson.D{
-			{Key: "email", Value: "test.user@example.com"},
+			{Key: "email", Value: "johndoe@example.com"},
 			{Key: "password", Value: hashed},
+			{Key: "username", Value: "john.doe"},
+			{Key: "first_name", Value: "John"},
+			{Key: "last_name", Value: "Doe"},
+			{Key: "phone", Value: "123-456-7890"},
+			{Key: "psql_id", Value: testID},
 		}
 
 		// Add the mock response for FindOne
