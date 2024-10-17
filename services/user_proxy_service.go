@@ -11,10 +11,10 @@ import (
 	"session-auth/utils"
 )
 
-func CreateUserEntry(user user_models.CreateUserRow) (user_models.CreateUserRowResponse, error) {
+func CreateUserEntry(user user_models.CreateUserRow) (user_models.User, error) {
 	log := utils.InitLogger() // Initialize and get the logger
 	var successResponse core_models.SuccessResponse
-	var userResponse user_models.CreateUserRowResponse
+	var userResponse user_models.User
 	url := viper.GetString("proxies.user.url")
 
 	userJson, err := json.Marshal(user)
@@ -52,7 +52,7 @@ func CreateUserEntry(user user_models.CreateUserRow) (user_models.CreateUserRowR
 		return userResponse, fmt.Errorf("error decoding response body: %w", err)
 	}
 
-	// Unmarshal the Data field into AuthResponse
+	// Unmarshal the Data field
 	dataBytes, err := json.Marshal(successResponse.Data)
 	if err != nil {
 		log.Error("error marshalling proxy responses")

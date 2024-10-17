@@ -105,12 +105,8 @@ func CreateUser(db *mongo.Client, user *models.CreateUser) (*models.AuthResponse
 	}
 
 	return &models.AuthResponse{
-		Token:     token,
-		Username:  createUserRowResult.Username,
-		FirstName: createUserRowResult.FirstName,
-		LastName:  createUserRowResult.LastName,
-		Email:     createUserRowResult.Email,
-		Phone:     createUserRowResult.Phone,
+		Token:    token,
+		UserData: createUserRowResult,
 	}, nil
 }
 
@@ -170,14 +166,7 @@ func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, 
 	}
 
 	return &models.AuthResponse{
-		Token:          token,
-		Username:       userRow.Username,
-		FirstName:      userRow.FirstName,
-		LastName:       userRow.LastName,
-		Email:          userRow.Email,
-		Phone:          userRow.Phone,
-		CreatedAt:      userRow.CreatedAt,
-		FollowersCount: userRow.FollowersCount,
-		FollowingCount: userRow.FollowingCount,
+		Token:    token,
+		UserData: userRow,
 	}, nil
 }

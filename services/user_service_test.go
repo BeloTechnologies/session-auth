@@ -60,7 +60,7 @@ func TestCreateUser(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotNil(t, authResponse)
 		assert.NotNil(t, authResponse.Token)
-		assert.Equal(t, authResponse.Email, inputtedUser.Email)
+		assert.Equal(t, authResponse.UserData.Email, inputtedUser.Email)
 	})
 }
 
