@@ -34,8 +34,9 @@ func main() {
 	r.Use(cors.New(config))
 
 	routes.UserRoutes(r, db)
+	routes.AuthRoutes(r)
 
-	log.Println("Starting server on :8080")
+	log.Println(fmt.Sprintf("Starting server on :%d", serverPort))
 
 	e := r.Run(fmt.Sprintf(":%d", serverPort))
 	if e != nil {

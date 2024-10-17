@@ -3,11 +3,11 @@
     "mongodburi": "mongodb://localhost:27017"
   },
   "server": {
-        "port": 8080
+        "port": 8081
   },
   "proxies": {
     "user": {
-      "url": "http://localhost:8081"
+      "url": "http://localhost:8082"
     }
   }
 }
