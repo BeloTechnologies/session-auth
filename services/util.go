@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 	"os"
@@ -36,4 +37,27 @@ func GenerateJwt(ID string) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+// ValidateJwt validates a JWT token
+func ValidateJwt(tokenString string) bool {
+	secret := os.Getenv("SECRET_KEY")
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Check if the token's signing method is as expected
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(secret), nil
+	})
+
+	if err != nil {
+		return false
+	}
+
+	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return true
+	}
+
+	return false
 }

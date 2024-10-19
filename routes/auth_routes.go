@@ -8,6 +8,6 @@ import (
 func AuthRoutes(r *gin.Engine) {
 	authGroup := r.Group("/auth")
 	{
-		authGroup.GET("/ping/", controllers.Ping())
+		authGroup.POST("/", controllers.ValidateToken())
 	}
 }
