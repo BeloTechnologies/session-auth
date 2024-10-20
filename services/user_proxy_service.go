@@ -68,7 +68,7 @@ func CreateUserEntry(user user_models.CreateUserRow) (user_models.User, error) {
 }
 
 // GetUser retrieves a user from the user service
-func GetUser(ID int) (user_models.User, error) {
+func GetUser(ID int, token string) (user_models.User, error) {
 	log := utils.InitLogger() // Initialize and get the logger
 	var successResponse core_models.SuccessResponse
 	var user user_models.User
@@ -80,7 +80,7 @@ func GetUser(ID int) (user_models.User, error) {
 		return user, fmt.Errorf("error creating new request: %w", err)
 	}
 
-	req.Header.Set("Authorization", "token")
+	req.Header.Set("Authorization", token)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)

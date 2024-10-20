@@ -157,7 +157,7 @@ func LoginUser(db *mongo.Client, user *models.LoginUser) (*models.AuthResponse, 
 	}
 
 	// Get User details from the relational database for fast access
-	userRow, proxyErr := GetUser(result.PsqlID)
+	userRow, proxyErr := GetUser(result.PsqlID, token)
 	if proxyErr != nil {
 		log.Errorf("Error getting user row: %v", proxyErr)
 		return nil, &core_models.SessionError{
