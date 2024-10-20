@@ -80,6 +80,8 @@ func GetUser(ID int) (user_models.User, error) {
 		return user, fmt.Errorf("error creating new request: %w", err)
 	}
 
+	req.Header.Set("Authorization", "token")
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
